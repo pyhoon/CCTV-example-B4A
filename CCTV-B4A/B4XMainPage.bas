@@ -17,6 +17,7 @@ Sub Class_Globals
 	Private frontCamera As Boolean = False
 	Private ServerIp As String = "192.168.50.42" ' B4J server IP
 	Private ServerPort As Int = 17178
+	Private btnConnect As B4XView
 End Sub
 
 Public Sub Initialize
@@ -26,7 +27,7 @@ End Sub
 Private Sub B4XPage_Created (Root1 As B4XView)
 	Root = Root1
 	Root.LoadLayout("1")
-	B4XPages.SetTitle(Me, "CCTV")
+	B4XPages.SetTitle(Me, "CCTV Mobile")
 End Sub
 
 Private Sub B4XPage_Disappear
@@ -106,7 +107,10 @@ Private Sub btnTakePicture_Click
 End Sub
 
 Private Sub btnConnect_Click
-	If socket1.IsInitialized Then socket1.Close
+	If socket1.IsInitialized Then
+		socket1.Close
+		Return
+	End If
 	socket1.Initialize("socket1")
 	socket1.Connect(ServerIp, ServerPort, 5000)
 	Wait For Socket1_Connected (Successful As Boolean)
@@ -114,14 +118,16 @@ Private Sub btnConnect_Click
 		If astream.IsInitialized Then astream.Close
 		astream.InitializePrefix(socket1.InputStream, False, socket1.OutputStream, "astream")
 		Log("Connected")
+		btnConnect.Text = Chr(0xF0C1)
 		ToastMessageShow("Connected", False)
 	Else
 		Log(LastException)
+		ToastMessageShow("Connection failed", False)
 	End If
 End Sub
 
 Private Sub Panel1_Click
-	camEx.FocusAndTakePicture
+	'camEx.FocusAndTakePicture
 End Sub
 
 Sub Camera1_Preview (PreviewPic() As Byte)
@@ -147,5 +153,8 @@ End Sub
 
 Sub astream_Terminated
 	Log("Disconnected")
-	ToastMessageShow("Disconnected", False)
+	If btnConnect.Text <> Chr(0xF127) Then
+		ToastMessageShow("Disconnected", False)		
+	End If
+	btnConnect.Text = Chr(0xF127)
 End Sub
